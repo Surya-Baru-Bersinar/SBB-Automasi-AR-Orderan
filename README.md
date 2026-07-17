@@ -659,5 +659,3 @@ Ubah `ar_time_interval` di `[AR]`. Minimum yang disarankan: 5 menit untuk menghi
 Proyek ini dikembangkan untuk keperluan internal perusahaan. Silakan sesuaikan dengan kebutuhan organisasi Anda.
 
 ---
-
-*Dikembangkan oleh [ACC-TAX-REIGHTEEN](https://github.com/ACC-TAX-REIGHTEEN)*
