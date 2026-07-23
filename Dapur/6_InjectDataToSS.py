@@ -151,11 +151,12 @@ def run_ar_process():
     try:
         key_col_idx = header_clean.index(ar_key_col_name.strip().upper())
         target_col_idx = header_clean.index(ar_target_col_name.strip().upper())
+        
+        prod_key_clean = ar_prod_key_col_name.strip().upper()
+        prod_col_idx = header_clean.index(prod_key_clean) if prod_key_clean in header_clean else None
     except ValueError as e:
         print(f"--> Kesalahan nama kolom di Google Sheets tidak ditemukan: {e}")
         return
-        
-    prod_col_idx = header.index(ar_prod_key_col_name) if ar_prod_key_col_name in header else None
 
     requests = []
     current_date = datetime.now().date()
@@ -188,6 +189,23 @@ def run_ar_process():
                 (user_ar_rows['No. Faktur'].astype(str).str.strip().str.lower() != 'nan') &
                 (user_ar_rows['No. Faktur'].astype(str).str.strip() != '')
             ]
+
+        if not user_ar_rows.empty and 'Tgl Faktur' in user_ar_rows.columns:
+            indo_months = {'mei': 'may', 'agu': 'aug', 'okt': 'oct', 'nop': 'nov', 'des': 'dec', 'peb': 'feb'}
+            
+            def parse_date_sort(val):
+                if pd.isna(val):
+                    return pd.NaT
+                val_str = str(val).lower().strip()
+                for indo, eng in indo_months.items():
+                    if indo in val_str:
+                        val_str = val_str.replace(indo, eng)
+                        break
+                return pd.to_datetime(val_str, errors='coerce')
+
+            user_ar_rows = user_ar_rows.copy()
+            user_ar_rows['Temp_Sort_Date'] = user_ar_rows['Tgl Faktur'].apply(parse_date_sort)
+            user_ar_rows = user_ar_rows.sort_values(by='Temp_Sort_Date', ascending=True)
         
         total_sisa_piutang = 0
         if not user_ar_rows.empty and 'Sisa Piutang' in user_ar_rows.columns:
@@ -351,6 +369,8 @@ def run_ar_process():
         print("--> Tidak ada data target kosong baru yang perlu diperbarui.")
 
 if __name__ == "__main__":
+    from datetime import datetime, timedelta
+    
     while True:
         try:
             config_load = load_config()
@@ -363,5 +383,9 @@ if __name__ == "__main__":
         except Exception as err:
             print(f"--> Terjadi error runtime saat proses berjalan: {err}")
             
-        print(f"--> Menunggu interval selama {interval_menit} menit berikutnya...\n")
+        next_run = datetime.now() + timedelta(minutes=interval_menit)
+        jam_berikutnya = next_run.strftime('%H:%M:%S')
+        
+        print(f"--> Proses selesai dan dalam mode STANDBY. Menunggu {interval_menit} menit (Eksekusi berikutnya pukul {jam_berikutnya})\n")
+        
         time.sleep(interval_menit * 60)
