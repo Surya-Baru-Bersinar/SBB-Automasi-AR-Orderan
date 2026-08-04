@@ -6,11 +6,11 @@ import numpy as np
 
 indo_months_in = {
     'Jan': 'Jan', 'Feb': 'Feb', 'Mar': 'Mar', 'Apr': 'Apr', 'Mei': 'May', 'Jun': 'Jun',
-    'Jul': 'Jul', 'Agu': 'Aug', 'Agt': 'Aug', 'Sep': 'Sep', 'Okt': 'Oct', 'Nop': 'Nov', 'Des': 'Dec',
+    'Jul': 'Jul', 'Agu': 'Aug', 'Sep': 'Sep', 'Okt': 'Oct', 'Nop': 'Nov', 'Des': 'Dec',
     'Peb': 'Feb', 'Ags': 'Aug', 
     
     'jan': 'Jan', 'feb': 'Feb', 'mar': 'Mar', 'apr': 'Apr', 'mei': 'May', 'jun': 'Jun',
-    'jul': 'Jul', 'agu': 'Aug', 'ags': 'Aug', 'agt': 'Aug', 'sep': 'Sep', 'okt': 'Oct', 'nop': 'Nov', 
+    'jul': 'Jul', 'agu': 'Aug', 'ags': 'Aug', 'sep': 'Sep', 'okt': 'Oct', 'nop': 'Nov', 
     'nov': 'Nov', 'des': 'Dec'
 }
 
@@ -73,15 +73,16 @@ def clean_data_autofit(input_file, output_file):
         return
         
     target_headers = [
-        "Kode", 
+        "NOPEL", "Kode", 
         "No. Faktur", 
         "Tgl Faktur", 
+        "Jatuh Tempo",
         "Nilai Faktur", 
         "Sisa Piutang", 
-        "Umur JT", 
+        "Umur", "Umur JT", 
         "Nama Pelanggan", 
         "Sales", 
-        "Negara Pelanggan"
+        "Negara", "Negara Pelanggan"
     ]
     
     header_map = {}
@@ -111,34 +112,43 @@ def clean_data_autofit(input_file, output_file):
     header_labels = ["No. Faktur", "Faktur", "No.", "Total", "Halaman", "Page", "Tanggal"]
     df_clean = df_clean[~df_clean[col_faktur].astype(str).str.contains('|'.join(header_labels), case=False, na=False)]
     
-    if "Kode" in header_map:
-        col_kode = header_map["Kode"]
-        df_clean[col_kode] = df_clean[col_kode].astype(str).str.strip()
-        kondisi_kosong_kode = df_clean[col_kode].str.lower().isin(['nan', 'none', ''])
-        df_clean.loc[kondisi_kosong_kode, col_kode] = np.nan
-        df_clean = df_clean.dropna(subset=[col_kode]).copy()
+    col_kode_key = None
+    if "NOPEL" in header_map:
+        col_kode_key = header_map["NOPEL"]
+    elif "Kode" in header_map:
+        col_kode_key = header_map["Kode"]
+
+    if col_kode_key is not None:
+        df_clean[col_kode_key] = df_clean[col_kode_key].astype(str).str.strip()
+        kondisi_kosong_kode = df_clean[col_kode_key].str.lower().isin(['nan', 'none', ''])
+        df_clean.loc[kondisi_kosong_kode, col_kode_key] = np.nan
+        df_clean = df_clean.dropna(subset=[col_kode_key]).copy()
         
-    def get_col_data(header_name):
-        if header_name in header_map:
-            return df_clean[header_map[header_name]]
+    def get_col_data(header_names):
+        if isinstance(header_names, str):
+            header_names = [header_names]
+        for name in header_names:
+            if name in header_map:
+                return df_clean[header_map[name]]
         return np.nan
 
     temp_df = pd.DataFrame({
-        "Kode Pelanggan": get_col_data("Kode"),
+        "Kode Pelanggan": get_col_data(["NOPEL", "Kode"]),
         "No. Faktur": get_col_data("No. Faktur"),
         "Tgl Faktur": get_col_data("Tgl Faktur"),
         "_SS_1": np.nan,
-        "Jatuh Tempo": np.nan,
+        "Jatuh Tempo": get_col_data("Jatuh Tempo"),
         "_SS_2": np.nan,
         "Nilai Faktur": get_col_data("Nilai Faktur"),
         "Sisa Piutang": get_col_data("Sisa Piutang"),
-        "Umur JT": get_col_data("Umur JT"),
+        "Umur JT": get_col_data(["Umur", "Umur JT"]),
         "Nama Pelanggan": get_col_data("Nama Pelanggan"),
         "Nama Penjual": get_col_data("Sales"),
-        "Nama Kontak": get_col_data("Negara Pelanggan")
+        "Nama Kontak": get_col_data(["Negara", "Negara Pelanggan"])
     })
 
     temp_df["Tgl Faktur"] = temp_df["Tgl Faktur"].apply(parse_tgl_faktur)
+    temp_df["Jatuh Tempo"] = temp_df["Jatuh Tempo"].apply(parse_tgl_faktur)
 
     def parse_to_float(val):
         if pd.isna(val) or str(val).strip() == "":
