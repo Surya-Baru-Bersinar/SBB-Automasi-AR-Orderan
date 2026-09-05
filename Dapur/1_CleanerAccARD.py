@@ -79,7 +79,7 @@ def clean_data_autofit(input_file, output_file):
         "Jatuh Tempo",
         "Nilai Faktur", 
         "Sisa Piutang", 
-        "Umur", "Umur JT", 
+        "Umur", "Umur JT", "Umur Piutang",
         "Nama Pelanggan", 
         "Sales", 
         "Negara", "Negara Pelanggan"
@@ -141,7 +141,7 @@ def clean_data_autofit(input_file, output_file):
         "_SS_2": np.nan,
         "Nilai Faktur": get_col_data("Nilai Faktur"),
         "Sisa Piutang": get_col_data("Sisa Piutang"),
-        "Umur JT": get_col_data(["Umur", "Umur JT"]),
+        "Umur JT": get_col_data(["Umur", "Umur JT", "Umur Piutang"]),
         "Nama Pelanggan": get_col_data("Nama Pelanggan"),
         "Nama Penjual": get_col_data("Sales"),
         "Nama Kontak": get_col_data(["Negara", "Negara Pelanggan"])
