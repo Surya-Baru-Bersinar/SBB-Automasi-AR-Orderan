@@ -221,7 +221,7 @@ def run_ar_process():
         df_ar_clean = df_ar_clean[
             ~df_ar_clean["Nama Penjual"]
             .astype(str)
-            .str.contains("FRAUD", case=False, na=False)
+            .str.contains("CASE", case=False, na=False)
         ]
 
     scope = [
@@ -561,8 +561,8 @@ def run_ar_process():
                     line_str += f" ({tgl_jt_giro})"
 
             if flag_fraud == "Ya" and "Nama Penjual" in inv_row.index:
-                if "FRAUD" in str(inv_row.get("Nama Penjual", "")).upper():
-                    line_str += " (FRAUD)"
+                if "CASE" in str(inv_row.get("Nama Penjual", "")).upper():
+                    line_str += " (CASE)"
 
             note_lines.append(line_str)
 
