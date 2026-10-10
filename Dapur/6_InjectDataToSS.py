@@ -562,7 +562,7 @@ def run_ar_process():
 
             if flag_fraud == "Ya" and "Nama Penjual" in inv_row.index:
                 if "CASE" in str(inv_row.get("Nama Penjual", "")).upper():
-                    line_str += " (CASE)"
+                    line_str += " (FRAUD)"
 
             note_lines.append(line_str)
 
