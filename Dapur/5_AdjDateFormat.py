@@ -1,11 +1,28 @@
+import warnings
 import pandas as pd
 
-df = pd.read_excel("ARClean_temp.xlsx")
+try:
+    df = pd.read_excel("ARClean_temp.xlsx", engine="calamine")
+except (ImportError, ValueError):
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore")
+        df = pd.read_excel("ARClean_temp.xlsx", engine="openpyxl")
 
 mapping_bulan = {
-    1: 'Jan',  2: 'Feb',  3: 'Mar',  4: 'Apr',  5: 'Mei',  6: 'Jun',
-    7: 'Jul',  8: 'Agu',  9: 'Sep',  10: 'Okt', 11: 'Nov', 12: 'Des'
+    1: "Jan",
+    2: "Feb",
+    3: "Mar",
+    4: "Apr",
+    5: "Mei",
+    6: "Jun",
+    7: "Jul",
+    8: "Agu",
+    9: "Sep",
+    10: "Okt",
+    11: "Nov",
+    12: "Des",
 }
+
 
 def ubah_format(nilai):
     if pd.isna(nilai):
@@ -23,10 +40,8 @@ def ubah_format(nilai):
         dt = pd.to_datetime(angka_serial, unit="D", origin="1899-12-30")
 
         if pd.notna(dt):
-            hari_asli = dt.month 
-            bulan_asli = (
-                dt.day
-            )
+            hari_asli = dt.month
+            bulan_asli = dt.day
             tahun_asli = dt.year
 
             if 1 <= bulan_asli <= 12:
