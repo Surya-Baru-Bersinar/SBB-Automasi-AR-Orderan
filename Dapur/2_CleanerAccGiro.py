@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import sys
 
 config_file = 'config.conf'
 run_giro = False
@@ -16,9 +17,14 @@ if os.path.exists(config_file):
 
 if not run_giro:
     print("--> Proses GIRO di-skip berdasarkan config.conf.")
-    exit()
+    sys.exit()
 
-df = pd.read_excel('Giro.xls', header=4)
+input_file = 'Giro.xls'
+
+try:
+    df = pd.read_excel(input_file, header=4, engine='calamine')
+except (ImportError, ValueError):
+    df = pd.read_excel(input_file, header=4)
 
 df.columns = df.columns.astype(str).str.strip()
 
@@ -42,12 +48,8 @@ hasil_df = hasil_df.rename(columns=mapping_kolom)
 
 if 'No. Pelanggan' in hasil_df.columns:
     hasil_df = hasil_df.dropna(subset=['No. Pelanggan'])
-    
     hasil_df['No. Pelanggan'] = hasil_df['No. Pelanggan'].astype(str).str.strip()
     hasil_df = hasil_df[~hasil_df['No. Pelanggan'].isin(['', 'nan', 'None'])]
-
-# if 'No. Faktur. (SO)' in hasil_df.columns:
-#    hasil_df['No. Faktur. (SO)'] = hasil_df['No. Faktur. (SO)'].astype(str).str.replace('INV/', '', regex=False)
 
 if 'Total Diterima' in hasil_df.columns:
     hasil_df['Total Diterima'] = hasil_df['Total Diterima'].astype(str).str.replace(',', '.', regex=False)
@@ -56,6 +58,8 @@ if 'Total Diterima' in hasil_df.columns:
 if 'Nilai terima' in hasil_df.columns:
     hasil_df['Nilai terima'] = hasil_df['Nilai terima'].astype(str).str.replace(',', '.', regex=False)
     hasil_df['Nilai terima'] = pd.to_numeric(hasil_df['Nilai terima'], errors='coerce')
+
+hasil_df = hasil_df.reset_index(drop=True)
 
 hasil_df.to_excel('Giro_temp.xlsx', index=False)
 
