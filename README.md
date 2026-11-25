@@ -67,7 +67,7 @@ Python **3.8+** disarankan.
 ### Library yang dibutuhkan
 
 ```bash
-pip install pandas openpyxl xlrd requests gspread google-auth
+pip install pandas openpyxl xlrd python-calamine requests gspread google-auth
 ```
 
 | Library | Digunakan di | Kegunaan |
