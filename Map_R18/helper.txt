@@ -1,0 +1,11 @@
+/Dapur
+  0_DownloaderData.py
+  0_HDownloaderData.py
+  1_CleanerAccAR.py [x]
+  1_CleanerAccARD.py [x]
+  2_CleanerAccGiro.py [x]
+  2_HCleanerAccGiroDue.py
+  3_AddGiroToSheet.py
+  4_PatchFallbackCash.py
+  5_AdjDateFormat.py [x]
+  6_InjectDataToSS.py
