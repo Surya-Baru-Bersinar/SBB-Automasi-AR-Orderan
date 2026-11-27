@@ -10,7 +10,11 @@ import pandas as pd
 
 
 def load_config():
-    config = configparser.ConfigParser()
+    config = configparser.ConfigParser(
+        inline_comment_prefixes=('#', ';'),
+        allow_no_value=True,
+        strict=False
+    )
     config.read("config.conf")
     return config
 
@@ -119,7 +123,7 @@ def read_excel_auto_header(file_path, sheet_name, target_column):
         df_raw = pd.read_excel(
             file_path, sheet_name=sheet_name, header=None, engine="calamine"
         )
-    except (ImportError, ValueError):
+    except (ImportError, ValueError, Exception):
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
             df_raw = pd.read_excel(
@@ -170,6 +174,9 @@ def run_ar_process():
     ar_target_col_name = config.get("AR", "ar_target_col").strip()
 
     flag_fraud = config.get("AR", "ar_data_fraud", fallback="No").strip()
+    raw_fraud_kw = config.get("AR", "ar_data_fraud_keyword", fallback="CASE|FRAUD").strip()
+    fraud_kw = raw_fraud_kw if raw_fraud_kw else "CASE|FRAUD"
+
     flag_codecus = config.get("AR", "ar_data_codecus", fallback="Ya").strip()
     flag_namecus = config.get("AR", "ar_data_namecus", fallback="Ya").strip()
     fallback_prod = config.get("AR", "ar_data_prod", fallback="PCMO").strip()
@@ -232,7 +239,7 @@ def run_ar_process():
         df_ar_clean = df_ar_clean[
             ~df_ar_clean["Nama Penjual"]
             .astype(str)
-            .str.contains("CASE", case=False, na=False)
+            .str.contains(fraud_kw, case=False, na=False, regex=True)
         ]
 
     scope = [
@@ -572,8 +579,11 @@ def run_ar_process():
                     line_str += f" ({tgl_jt_giro})"
 
             if flag_fraud == "Ya" and "Nama Penjual" in inv_row.index:
-                if "CASE" in str(inv_row.get("Nama Penjual", "")).upper():
-                    line_str += " (CASE)"
+                nama_penjual_val = str(inv_row.get("Nama Penjual", ""))
+                match_fraud = re.search(fraud_kw, nama_penjual_val, flags=re.IGNORECASE)
+                if match_fraud:
+                    tag_ditemukan = match_fraud.group(0).upper()
+                    line_str += f" ({tag_ditemukan})"
 
             note_lines.append(line_str)
 
